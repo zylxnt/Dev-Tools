@@ -1,0 +1,55 @@
+/**
+ * @name Dev Tools
+ * @author zylxnt
+ * @description Enables dev tools and shit cause yes :P
+ * @version 0.0.2
+ * @source https://github.com/zylxnt/Dev-Tools
+ */
+
+const version = Number("0.0.2".replaceAll('.', ''));
+
+function enableDevTools(enable) {
+  window.webpackChunkdiscord_app.push([[Math.random()], {}, (req) => {
+    const webpackData = Object.values(req.c);
+
+    const users = webpackData.find(x => x.exports?.default?.getUsers).exports.default;
+    const currentUser = users.getCurrentUser();
+    const stores = Object.values(users._dispatcher._actionHandlers._dependencyGraph.nodes);
+
+    currentUser.flags += enable ? 1 : -1;
+
+    stores.find(x => x.name === "DeveloperExperimentStore").actionHandler["CONNECTION_OPEN"]();
+
+    try {
+      stores.find(x => x.name === "ExperimentStore").actionHandler["OVERLAY_INITIALIZE"]({
+        user: { flags: 1 }
+      });
+    } catch (_) {}
+  }]);
+}
+
+module.exports = class {
+  start() {
+    enableDevTools(true);
+  }
+
+  stop() {
+    enableDevTools(false);
+  }
+
+  load() {
+    fetch("https://raw.githubusercontent.com/zylxnt/Dev-Tools/main/dev-tools.plugin.js", { cache: "no-store" })
+      .then(res => res.text())
+      .then(res => {
+        const newVersion = Number(res.substring(res.indexOf("version") + 8, res.indexOf("version") + 13).replaceAll('.', ''));
+        if (newVersion > version) {
+          console.log("UPDATING!");
+          require("fs").writeFile(`${BdApi.Plugins.folder}/DevTools.plugin.js`, res);
+        }
+      });
+  }
+
+  constructor(config) {
+    this.config = config;
+  }
+};
